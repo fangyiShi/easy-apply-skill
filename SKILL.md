@@ -11,6 +11,27 @@ Easy Apply is a human-in-the-loop job-search and application-material workflow. 
 
 Operate inside the user's Easy Apply workspace. Candidate-specific facts and preferences belong in that workspace, not in this Skill.
 
+## Runtime preflight
+
+Before setup or ordinary module execution, verify only the capabilities required by the requested task:
+
+- Python 3.11 or later is available.
+- PyYAML is importable before reading `easy-apply.yaml`.
+- `pypdf` or the documented PDF fallback is available before PDF inspection.
+- `pdflatex` is available before generating LaTeX PDFs.
+- Notion is connected and authorized before creating, querying, or updating Notion content.
+- The runtime can reach the Notion upload endpoint before material sync.
+
+If a required capability is missing:
+
+1. stop before creating substantial workspace content or partial external state;
+2. identify the missing capability clearly;
+3. provide the exact installation or connection step appropriate to the runtime;
+4. do not install packages, modify system configuration, or connect an external account without user authorization;
+5. continue with modules that do not require the missing capability when that still satisfies the request.
+
+`requirements.txt` is the canonical list of required Python packages. PyMuPDF is optional and enables only the last-page whitespace diagnostic.
+
 Primary workspace inputs:
 
 ```text
@@ -22,7 +43,7 @@ artefacts/
 state/
 ```
 
-Before ordinary module execution, use `scripts/validate_workspace.py` for local deterministic checks when practical. Connector-side Notion reachability/schema checks remain runtime responsibilities.
+After the relevant runtime preflight passes, use `scripts/validate_workspace.py` for local deterministic checks when practical. Connector-side Notion reachability and schema checks remain runtime responsibilities.
 
 ## Route by task
 

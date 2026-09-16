@@ -11,6 +11,66 @@ Easy Apply is a reusable, human-in-the-loop workflow for:
 
 It does **not** auto-submit job applications. The user decides what to apply for and controls application Status after a job row is created.
 
+## Installation
+
+### Install with Codex
+
+Ask Codex:
+
+```text
+Install the skill from https://github.com/fangyiShi/easy-apply-skill
+```
+
+Start a new Codex conversation after installation so the new Skill is discovered.
+
+### Manual installation
+
+Clone the repository into the Codex skills directory and install its Python dependencies.
+
+Windows PowerShell:
+
+```powershell
+git clone https://github.com/fangyiShi/easy-apply-skill.git "$HOME\.codex\skills\easy-apply"
+py -3 -m pip install -r "$HOME\.codex\skills\easy-apply\requirements.txt"
+```
+
+macOS or Linux:
+
+```bash
+git clone https://github.com/fangyiShi/easy-apply-skill.git "$HOME/.codex/skills/easy-apply"
+python3 -m pip install -r "$HOME/.codex/skills/easy-apply/requirements.txt"
+```
+
+### Optional capabilities
+
+- LaTeX PDF generation requires `pdflatex` on `PATH`.
+- Notion tracking and material sync require an authorized Notion connection in the runtime.
+- PyMuPDF is optional and enables only a rough last-page whitespace diagnostic.
+
+Do not store Notion credentials, tokens or other secrets in the Skill or user workspace.
+
+### Verify the installation
+
+From the installed Skill directory, run:
+
+Windows PowerShell:
+
+```powershell
+py -3 -m unittest discover -s tests -v
+```
+
+macOS or Linux:
+
+```bash
+python3 -m unittest discover -s tests -v
+```
+
+Then start a new Codex conversation and try:
+
+```text
+Use $easy-apply to set up my job-search workspace.
+```
+
 ## Design
 
 The repository contains public/reusable behavior only. Candidate-specific facts, role targets, search parameters, preferences, templates and generated materials belong in the user's workspace.
