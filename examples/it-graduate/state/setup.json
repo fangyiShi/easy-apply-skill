@@ -1,0 +1,11 @@
+{
+  "schema_version": 1,
+  "attachments": {},
+  "profile": "confirmed",
+  "resume_layout": "confirmed",
+  "role_family_templates": {
+    "support": "confirmed",
+    "dev": "confirmed"
+  },
+  "notion": "confirmed"
+}

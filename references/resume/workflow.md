@@ -13,6 +13,7 @@ For each resume, use only:
 - the live job listing / application page;
 - the normalized job record and persisted `file_slug`;
 - `profile/profile.md` as the candidate factual source of truth;
+- the confirmed canonical format in `profile/resume-layout.tex`;
 - the closest confirmed template from `profile/resume-templates/`;
 - `easy-apply.yaml` resume settings;
 - current-session user facts explicitly provided for this application.
@@ -49,7 +50,7 @@ Do not create a new template for every job.
 
 ## 4. Tailor the resume
 
-Copy the selected template to a new job-specific file and make targeted edits.
+Copy the selected content template to a new job-specific file and make targeted edits. Preserve its `\input{resume-layout.tex}` reference so the output continues to use the workspace's canonical format.
 
 Typical tailoring areas:
 
@@ -63,7 +64,7 @@ JD terminology where factually supported
 
 Tailoring means changing what is emphasized and how confirmed facts are expressed. It does not mean inventing missing experience.
 
-Prefer localized edits over regenerating the entire document. Preserve approved layout, stable sections and unrelated content unless the JD gives a reason to change them.
+Prefer localized edits over regenerating the entire document. Do not copy the shared layout into the job-specific file or mutate `profile/resume-layout.tex` for one application. Preserve stable sections and unrelated content unless the JD gives a reason to change them.
 
 ---
 
@@ -84,7 +85,13 @@ If an attractive JD term is not supported by candidate evidence, omit it or desc
 
 ## 6. Build and validate
 
-Compile the job-specific `.tex` into PDF using the approved build path.
+Compile the job-specific `.tex` into PDF with:
+
+```text
+scripts/build_pdf.py <tex-file> --workspace <workspace> --output-dir <workspace>/artefacts/resume-pdf
+```
+
+The workspace argument makes the canonical layout discoverable from both role-family and job-specific file locations.
 
 Validate at least:
 
@@ -119,7 +126,7 @@ Do not regenerate the slug from later-edited Notion Company/Position values.
 
 ## 8. Sync
 
-After a valid PDF exists, sync application materials according to `../notion/sync.md`.
+After a valid PDF exists, sync application materials according to `../notion/sync.md` only when `notion.enabled` is true. When Notion is disabled, keep the valid local artefacts and report that remote sync was skipped.
 
 Resume generation may upload/update material files, but it must not change an existing application `Status`.
 

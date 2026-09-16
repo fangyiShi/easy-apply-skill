@@ -3,8 +3,11 @@
 from __future__ import annotations
 
 import argparse
+import importlib
 import json
+import re
 import shutil
+import sys
 from pathlib import Path
 from typing import Any
 
@@ -12,7 +15,9 @@ from lib.config import ConfigError, load_workspace_config
 from lib.profile import read_profile
 
 
-SUPPORTED_SCHEMA_VERSIONS = {1}
+SUPPORTED_SCHEMA_VERSIONS = {1, 2}
+LAYOUT_INPUT_RE = re.compile(r"\\input\s*\{\s*resume-layout\.tex\s*\}")
+ROLE_FAMILY_RE = re.compile(r"^[a-z0-9][a-z0-9_-]*$")
 REQUIRED_PROFILE_HEADINGS = {
     "## Basic Information",
     "## Job Search Background",
@@ -51,6 +56,79 @@ REQUIRED_NOTION_PROPERTIES = {
 
 def _normalize_type(value: str) -> str:
     return value.strip().lower().replace("-", "_").replace(" ", "_")
+
+
+def _check_runtime_tools() -> tuple[list[str], list[str], dict[str, str]]:
+    errors: list[str] = []
+    warnings: list[str] = []
+    details = {"python_executable": sys.executable, "python_version": sys.version.split()[0]}
+
+    if sys.version_info < (3, 11):
+        errors.append(f"Python 3.11+ is required; current interpreter is {sys.version.split()[0]}")
+    if not sys.executable or not Path(sys.executable).is_file():
+        errors.append(f"Current Python executable is not usable: {sys.executable!r}")
+    try:
+        yaml_module = importlib.import_module("yaml")
+        if not hasattr(yaml_module, "safe_load"):
+            raise ImportError("module does not provide safe_load")
+    except ImportError:
+        errors.append("PyYAML is not importable in the current Python environment")
+
+    try:
+        importlib.import_module("pypdf")
+        has_pypdf = True
+    except ImportError:
+        has_pypdf = False
+    has_pdf_fallback = shutil.which("pdfinfo") is not None and shutil.which("pdftotext") is not None
+    if not has_pypdf and not has_pdf_fallback:
+        errors.append("PDF inspection requires pypdf or both pdfinfo and pdftotext")
+    if shutil.which("pdflatex") is None:
+        errors.append("pdflatex is not available on PATH")
+
+    return errors, warnings, details
+
+
+def _validate_setup_state(
+    root: Path,
+    role_families: dict[str, Any],
+    notion_enabled: bool,
+) -> tuple[list[str], list[str]]:
+    errors: list[str] = []
+    warnings: list[str] = []
+    path = root / "state" / "setup.json"
+    if not path.is_file():
+        return ["Required setup state missing: state/setup.json"], warnings
+
+    try:
+        state = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        return [f"Could not parse {path}: {exc}"], warnings
+    if not isinstance(state, dict):
+        return ["state/setup.json must contain a JSON object"], warnings
+
+    if state.get("schema_version") != 1:
+        errors.append("state/setup.json must use schema_version 1")
+    if not isinstance(state.get("attachments"), dict):
+        errors.append("Setup attachments state must be an object")
+
+    if state.get("profile") != "confirmed":
+        errors.append("Setup profile state must be `confirmed`")
+    if state.get("resume_layout") != "confirmed":
+        errors.append("Setup resume_layout state must be `confirmed`")
+
+    template_states = state.get("role_family_templates")
+    if not isinstance(template_states, dict):
+        errors.append("Setup role_family_templates state must be an object")
+    else:
+        for role in role_families:
+            if template_states.get(role) != "confirmed":
+                errors.append(f"Role-family template is not confirmed: {role}")
+
+    expected_notion_state = "confirmed" if notion_enabled else "skipped"
+    if state.get("notion") != expected_notion_state:
+        errors.append(f"Setup notion state must be `{expected_notion_state}`")
+
+    return errors, warnings
 
 
 def validate_notion_schema_snapshot(path: str | Path) -> tuple[list[str], list[str]]:
@@ -97,15 +175,30 @@ def validate_workspace(
     errors: list[str] = []
     warnings: list[str] = []
     external_checks: list[str] = []
+    runtime_details: dict[str, str] = {}
+
+    if check_tools:
+        tool_errors, tool_warnings, runtime_details = _check_runtime_tools()
+        errors.extend(tool_errors)
+        warnings.extend(tool_warnings)
 
     try:
         config = load_workspace_config(root)
     except ConfigError as exc:
-        return {"ok": False, "errors": [str(exc)], "warnings": [], "external_checks": []}
+        errors.append(str(exc))
+        return {
+            "ok": False,
+            "errors": errors,
+            "warnings": warnings,
+            "external_checks": external_checks,
+            **runtime_details,
+        }
 
     version = config.get("schema_version")
     if version not in SUPPORTED_SCHEMA_VERSIONS:
         errors.append(f"Unsupported schema_version: {version!r}; supported: {sorted(SUPPORTED_SCHEMA_VERSIONS)}")
+    elif version == 1:
+        warnings.append("schema_version 1 is deprecated; migrate the workspace to schema_version 2")
 
     for relative in REQUIRED_WORKSPACE_DIRS:
         if not (root / relative).is_dir():
@@ -119,17 +212,52 @@ def validate_workspace(
     except FileNotFoundError as exc:
         errors.append(str(exc))
 
+    if version == 2:
+        layout = root / "profile" / "resume-layout.tex"
+        if not layout.is_file():
+            errors.append("Required canonical resume layout missing: profile/resume-layout.tex")
+
     role_families = config.get("role_families", {})
     if not isinstance(role_families, dict) or not role_families:
         errors.append("At least one `role_families` template mapping is required")
+        role_families = {}
     else:
+        used_templates: dict[str, str] = {}
         for role, filename in role_families.items():
+            if not isinstance(role, str) or not ROLE_FAMILY_RE.fullmatch(role):
+                errors.append(
+                    f"Role-family key must use lowercase letters, numbers, hyphens or underscores: {role!r}"
+                )
+                continue
             if not isinstance(filename, str) or not filename.strip():
                 errors.append(f"Invalid template filename for role family {role!r}")
                 continue
+            if Path(filename).name != filename or Path(filename).suffix.lower() != ".tex":
+                errors.append(f"Role-family template must be one .tex filename for {role!r}: {filename!r}")
+                continue
+            filename_key = filename.casefold()
+            if filename_key in used_templates:
+                errors.append(
+                    f"Role families {used_templates[filename_key]!r} and {role!r} share template {filename!r}; "
+                    "each role family requires a distinct content template"
+                )
+            else:
+                used_templates[filename_key] = role
             template = root / "profile" / "resume-templates" / filename
             if not template.is_file():
                 errors.append(f"Configured resume template not found for {role!r}: {template}")
+            elif version == 2:
+                template_text = template.read_text(encoding="utf-8")
+                if not LAYOUT_INPUT_RE.search(template_text):
+                    errors.append(
+                        f"Role-family template {filename!r} must load the canonical layout with "
+                        r"\input{resume-layout.tex}"
+                    )
+
+    resume = config.get("resume", {})
+    pages = resume.get("pages") if isinstance(resume, dict) else None
+    if not isinstance(pages, int) or isinstance(pages, bool) or pages < 1:
+        errors.append("`resume.pages` must be a positive integer explicitly confirmed by the user")
 
     search = config.get("search", {})
     if not isinstance(search, dict):
@@ -152,26 +280,39 @@ def validate_workspace(
 
     notion = config.get("notion", {})
     notion_id = notion.get("data_source_id") if isinstance(notion, dict) else None
-    if not notion_id:
-        if allow_no_notion:
-            warnings.append("Notion data_source_id is not configured")
-        else:
-            errors.append("Notion data_source_id is not configured")
+    if version == 2:
+        notion_enabled = notion.get("enabled") if isinstance(notion, dict) else None
+        if not isinstance(notion_enabled, bool):
+            errors.append("`notion.enabled` must be true or false after setup asks the user")
+            notion_enabled = False
+        if notion_enabled and not notion_id:
+            errors.append("Notion is enabled but data_source_id is not configured")
+        if not notion_enabled and notion_id:
+            warnings.append("Notion is disabled; configured data_source_id will not be used")
+    else:
+        notion_enabled = bool(notion_id)
+        if not notion_id:
+            if allow_no_notion:
+                warnings.append("Notion data_source_id is not configured")
+            else:
+                errors.append("Notion data_source_id is not configured")
 
-    if notion_schema_json:
-        schema_errors, schema_warnings = validate_notion_schema_snapshot(notion_schema_json)
-        errors.extend(schema_errors)
-        warnings.extend(schema_warnings)
-    elif notion_id:
-        external_checks.append(
-            "Runtime must verify the configured Notion data source is reachable and matches references/notion/schema.md."
-        )
+    if notion_enabled:
+        if notion_schema_json:
+            schema_errors, schema_warnings = validate_notion_schema_snapshot(notion_schema_json)
+            errors.extend(schema_errors)
+            warnings.extend(schema_warnings)
+        elif notion_id:
+            external_checks.append(
+                "Runtime must verify the configured Notion data source is reachable and matches references/notion/schema.md."
+            )
+    elif notion_schema_json:
+        warnings.append("Notion schema snapshot was provided but Notion is disabled")
 
-    if check_tools:
-        if shutil.which("pdflatex") is None:
-            errors.append("pdflatex is not available on PATH")
-        if shutil.which("python") is None and shutil.which("py") is None:
-            warnings.append("Could not locate a standard Python launcher on PATH")
+    if version == 2:
+        state_errors, state_warnings = _validate_setup_state(root, role_families, notion_enabled)
+        errors.extend(state_errors)
+        warnings.extend(state_warnings)
 
     return {
         "ok": not errors,
@@ -180,6 +321,7 @@ def validate_workspace(
         "external_checks": external_checks,
         "workspace": str(root),
         "schema_version": version,
+        **runtime_details,
     }
 
 

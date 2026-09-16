@@ -2,10 +2,12 @@
 # This file is the single source of truth for user-configurable parameters.
 # Setup may populate or update values, but workflow rules belong in the Skill references, not here.
 
-schema_version: 1
+schema_version: 2
 
 notion:
-  # Created or connected during setup.
+  # Setup must ask whether the user wants Notion. Keep null until answered.
+  enabled: null
+  # Required only when enabled is true.
   data_source_id: null
 
 search:
@@ -34,8 +36,8 @@ eligibility:
   work_rights: null
 
 resume:
-  # Preferred maximum resume length unless a role-specific template intentionally differs.
-  pages: 1
+  # Setup must ask for this value. Do not infer it from an uploaded resume.
+  pages: null
 
   # Facts the user truly has but does not want included in generated application materials.
   # This is not a blacklist of things the user has never done.

@@ -2,7 +2,7 @@
 
 This file defines the Notion database contract used by Easy Apply.
 
-Notion is the user's application tracker and the mirror for generated application materials. It is **not** the source of truth for candidate facts, job-search history, or local files.
+When enabled, Notion is the user's application tracker and the mirror for generated application materials. It is **not** the source of truth for candidate facts, job-search history, or local files. A workspace may explicitly disable Notion.
 
 Only the Notion integration layer should depend on the exact property names defined here. Other Easy Apply modules should work with `JobRecord`, workspace configuration, or local file paths instead of hard-coding Notion field names.
 
@@ -20,14 +20,17 @@ The default database name is:
 Job Tracker
 ```
 
-The Notion data source ID is user-specific and must be stored in the workspace configuration:
+When Notion is enabled, its user-specific data source ID must be stored in the workspace configuration:
 
 ```yaml
 notion:
+  enabled: true
   data_source_id: collection://...
 ```
 
 Do not hard-code a user's data source ID inside the Skill.
+
+`enabled: false` means the user explicitly opted out. In that state, do not require a data-source ID and do not make connector/API calls. A missing or null `enabled` value means setup has not yet captured the user's choice.
 
 ---
 
@@ -301,9 +304,9 @@ A duplicate detection implementation may use stable URL, File Slug, and known jo
 
 ## 11. Setup and validation
 
-During setup, Easy Apply creates a new Job Tracker with the required properties and default options above, then stores its data source ID in `easy-apply.yaml`.
+During setup, first ask whether the user wants Notion. If disabled, record `enabled: false`, mark Notion setup as `skipped`, and perform no Notion operations. If enabled, create or connect a Job Tracker with the required properties and default options above, then store its data source ID in `easy-apply.yaml`.
 
-`validate_workspace.py` must verify at minimum:
+When Notion is enabled, `validate_workspace.py` and connector-side validation must verify at minimum:
 
 - a Notion data source ID is configured;
 - the data source is reachable;
@@ -311,6 +314,8 @@ During setup, Easy Apply creates a new Job Tracker with the required properties 
 - property types are compatible with this contract;
 - required Priority and Status values exist;
 - `File Slug` exists before resume/sync workflows run.
+
+When Notion is disabled, local validation must accept a missing data-source ID and skip connector-side checks.
 
 Do not silently repair destructive schema mismatches during ordinary job-search or resume execution. Report the mismatch and require validation/setup repair.
 

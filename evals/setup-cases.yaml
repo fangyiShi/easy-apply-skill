@@ -1,0 +1,57 @@
+schema_version: 1
+purpose: >
+  Regression cases for the Easy Apply setup conversation and workspace
+  contract. These cases verify user choices, source-file handling and the
+  separation of candidate truth, shared layout and role-family content.
+
+cases:
+  - id: uploaded_page_count_must_not_choose_target
+    input:
+      uploaded_resume_pages: 2
+      explicit_page_target: missing
+    expected:
+      ask_user_for_page_target: true
+      resume_pages_written: false
+      principles:
+        - page_target_is_user_choice
+        - do_not_infer_from_uploaded_resume
+
+  - id: two_directions_share_layout_not_content_template
+    input:
+      role_families: [software_development, digital_marketing]
+    expected:
+      canonical_layout_count: 1
+      role_family_template_count: 2
+      each_role_template_loads_canonical_layout: true
+      principles:
+        - shared_format
+        - distinct_direction_content
+
+  - id: one_page_resume_does_not_delete_profile_facts
+    input:
+      profile_fact_count: 20
+      page_target: 1
+      selected_resume_fact_count: 12
+    expected:
+      profile_fact_count_after_generation: 20
+      principles:
+        - profile_retains_complete_confirmed_history
+        - resume_selects_relevant_subset
+
+  - id: conversation_attachment_is_archived_unchanged
+    input:
+      attachment_location: current_conversation
+      preplaced_in_workspace: false
+    expected:
+      archived_under: profile/original-resumes
+      byte_hash_preserved: true
+      original_used_as_fact_source_only: true
+
+  - id: notion_opt_out_is_not_connection_failure
+    input:
+      notion_enabled: false
+      notion_data_source_id: null
+    expected:
+      setup_notion_state: skipped
+      connector_called: false
+      validation_error_for_missing_id: false
