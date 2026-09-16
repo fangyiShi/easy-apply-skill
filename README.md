@@ -103,6 +103,7 @@ my-job-search/
 ├── profile/
 │   ├── profile.md
 │   ├── original-resumes/
+│   ├── resume-layout.tex
 │   ├── resume-templates/
 │   └── cover-letter-layout.tex
 ├── sources/
@@ -113,6 +114,7 @@ my-job-search/
 │   ├── cover-letter-pdf/
 │   └── archive/
 └── state/
+    ├── setup.json
     ├── seen-jobs.jsonl
     └── runs/
 ```
@@ -157,13 +159,14 @@ Notion reachability and live schema checks require the runtime's authorized Noti
 ## Key principles
 
 - `profile/profile.md` is the factual source of truth for candidate claims.
-- Role-family resume templates are approved baselines, not new fact sources.
+- `profile/resume-layout.tex` is the user-confirmed canonical format shared by all resume directions.
+- Each role family has a distinct approved content template; templates are not new fact sources.
 - Job descriptions decide what to emphasize, never what to invent.
 - Search rules are general; candidate-specific thresholds/preferences live in the workspace.
 - Platform adapters describe stable platform behavior and browser quirks, not brittle click-by-click scripts.
-- `seen-jobs.jsonl` contains compact search history; Notion contains kept/application-tracking jobs.
+- `seen-jobs.jsonl` contains compact search history; when enabled, Notion contains kept/application-tracking jobs.
 - Generated local PDFs are the source of truth for Submitted Materials.
-- A failed multi-file sync must never replace Notion with a partial file list.
+- When Notion is enabled, a failed multi-file sync must never replace it with a partial file list.
 
 ## Historical source material
 

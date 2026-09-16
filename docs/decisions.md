@@ -34,9 +34,19 @@ Easy Apply does not use an old saved JD to prepare a new application after the l
 
 Tailoring starts from a user-confirmed role-family template and makes targeted changes. Whole-document regeneration is avoided because it costs more context/output, destabilizes layout and increases factual drift.
 
+Resume format and role-family content are separate. One canonical layout in the user workspace controls shared presentation, while each target role family has its own confirmed content template. The public Skill contains only a generic layout scaffold.
+
+## Resume length does not limit candidate truth
+
+Setup explicitly asks for the resume page target; it is never inferred from an uploaded file. `profile.md` retains the complete confirmed candidate history, while each role-family or job-specific resume selects only the most relevant subset.
+
+## Notion is an explicit workspace choice
+
+`notion.enabled` distinguishes an intentional opt-out from an incomplete connection. Disabled workspaces do not call Notion; enabled workspaces require a validated data source before Notion-dependent operations.
+
 ## profile.md is candidate truth
 
-Candidate claims must come from `profile/profile.md` or explicit current-session user information. Templates are presentation/content baselines, not independent evidence sources.
+Candidate claims must come from `profile/profile.md` or explicit current-session user information. Role-family templates are content/structure baselines, not independent evidence sources.
 
 ## Cover letters require a human checkpoint
 
@@ -44,7 +54,7 @@ Every cover letter asks the user for role/company connection, usable story and p
 
 ## Local PDFs are the source of truth for Notion materials
 
-Submitted Materials is replaced as a complete list. If a cover letter is added later, the current resume and cover letter are both uploaded again before one property replacement. Partial upload failure must not create partial remote state.
+When Notion is enabled, Submitted Materials is replaced as a complete list. If a cover letter is added later, the current resume and cover letter are both uploaded again before one property replacement. Partial upload failure must not create partial remote state.
 
 ## Regression cases replace prompt accretion
 

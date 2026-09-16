@@ -24,7 +24,7 @@ Only use JD wording when the underlying claim is already supported by candidate 
 
 ## 2. Preserve the approved template
 
-The selected role-family template is the baseline for structure and presentation.
+The selected role-family template is the baseline for direction-specific content and structure. `profile/resume-layout.tex` is the canonical presentation source shared by every role family.
 
 Prefer targeted edits to:
 
@@ -36,6 +36,8 @@ individual bullets
 ```
 
 Do not rewrite the entire resume just to make it look more tailored. Large structural changes should have a clear reason.
+
+Do not duplicate or fork the canonical layout for one role or job. A persistent format change belongs in `profile/resume-layout.tex` and requires user confirmation; a one-off content change belongs only in the job-specific resume.
 
 Do not create a new template merely because one job uses different wording.
 
@@ -134,7 +136,7 @@ ATS optimization must never override factual accuracy or basic human readability
 
 ## 8. Length and density
 
-Respect the page target configured in `easy-apply.yaml` or intentionally defined by the selected template.
+Respect the explicit page target configured in `easy-apply.yaml`. It must come from the user's setup answer, not the length of an uploaded resume.
 
 When the resume slightly overflows:
 
@@ -144,6 +146,8 @@ When the resume slightly overflows:
 4. remove lower-value content only when necessary.
 
 Do not truncate a useful sentence merely to force a page count.
+
+The page target limits the generated resume, not the candidate fact store. Removing a lower-value item from a resume must never remove that fact from `profile.md`.
 
 When the document is visibly underfilled, first check whether relevant supported content was omitted before artificially increasing spacing or font size.
 

@@ -104,7 +104,9 @@ def check_resume(workspace: str | Path, tex_file: str | Path, pdf_file: str | Pa
             + ", ".join(unsupported[:20])
         )
 
-    target_pages = resume_cfg.get("pages", 1) if isinstance(resume_cfg, dict) else 1
+    target_pages = resume_cfg.get("pages") if isinstance(resume_cfg, dict) else None
+    if not isinstance(target_pages, int) or isinstance(target_pages, bool) or target_pages < 1:
+        errors.append("`resume.pages` must be a positive integer explicitly confirmed by the user")
     try:
         pages = page_count(pdf_path)
         if isinstance(target_pages, int) and pages != target_pages:

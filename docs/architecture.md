@@ -51,13 +51,14 @@ Resume:
 
 ```text
 confirm live job
+-> load canonical workspace resume layout
 -> select approved role-family template
 -> make targeted grounded edits
 -> build
 -> deterministic checks
 -> AI semantic/visual review
 -> save locally
--> sync complete local PDF set
+-> sync complete local PDF set when Notion is enabled
 ```
 
 Cover letter:
@@ -69,7 +70,7 @@ confirm live job
 -> draft grounded narrative
 -> build/check/review
 -> save locally
--> sync complete local PDF set
+-> sync complete local PDF set when Notion is enabled
 ```
 
 ## Identity and storage
@@ -80,10 +81,11 @@ confirm live job
 - `state/seen-jobs.jsonl` stores compact history for all evaluated jobs.
 - Notion stores kept jobs and user application lifecycle.
 - Local generated PDFs are the source of truth for Submitted Materials.
+- User-confirmed layouts and role-family content templates live in the workspace, never in the reusable Skill.
 
 ## Human control
 
-Job search may create a row with initial `Status = Not Applied`. After creation, application Status and Apply date are user-owned. Easy Apply prepares materials but does not automatically submit applications.
+When Notion is enabled, job search may create a row with initial `Status = Not Applied`. After creation, application Status and Apply date are user-owned. When Notion is disabled, Easy Apply performs no Notion mutations. Easy Apply prepares materials but does not automatically submit applications.
 
 ## Testing
 

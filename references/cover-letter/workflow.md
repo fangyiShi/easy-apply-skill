@@ -174,7 +174,7 @@ Do not rebuild filenames ad hoc from later-edited Company/Position values.
 
 Local files are the source of truth.
 
-When Notion sync is requested, use the shared Notion sync workflow. Updating `Submitted Materials` must follow the full-list replacement rule defined in the Notion module.
+When `notion.enabled` is true and sync is requested, use the shared Notion sync workflow. Updating `Submitted Materials` must follow the full-list replacement rule defined in the Notion module. When Notion is disabled, keep the valid local letter and report that remote sync was skipped.
 
 Cover-letter generation must not change the user's application `Status`.
 

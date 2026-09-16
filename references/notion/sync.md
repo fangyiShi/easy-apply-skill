@@ -4,12 +4,15 @@ This file defines how Easy Apply mirrors local application PDFs into the Notion 
 
 Local generated files are the source of truth. Sync updates files only; it must not modify application Status or any other Job Tracker property.
 
+Material sync is available only when `notion.enabled` is true. When it is false, do not call Notion or upload files; report that local materials remain valid and remote sync was skipped.
+
 ## 1. Input
 
 Sync requires:
 
 ```text
 workspace path
+notion.enabled = true
 Notion row/page identifier
 persisted File Slug
 ```

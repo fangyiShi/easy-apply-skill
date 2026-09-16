@@ -11,8 +11,9 @@ Collect:
 1. **Target role families** — the main kinds of jobs the user wants to pursue. Use short internal keys later, but let the user describe them naturally first.
 2. **Search location** — the user's general preferred location/region. Platform-specific locations are configured only when that platform is first used.
 3. **Work-rights facts relevant to screening** — record only what the user explicitly states. Do not infer citizenship, visa type, sponsorship needs, or clearance eligibility.
-4. **Resume page target** — normally one integer target used as a default. A confirmed role-family template may intentionally differ.
+4. **Resume page target** — explicitly ask the user for the desired page count and record a positive integer. This question is mandatory. Never infer the target from the number of pages in an uploaded resume, an existing template, or a scaffold default.
 5. **Search keywords** — the core discovery terms the user wants Easy Apply to use.
+6. **Notion usage** — ask whether the user wants Notion tracking and material sync. Record the explicit answer in `notion.enabled`; do not treat a missing connection as an opt-out.
 
 ## Optional questions
 
@@ -33,8 +34,10 @@ Do not ask for:
 - cover-letter stories; ask those for each cover letter;
 - facts already clear and consistent in uploaded source material.
 
+The resume page target and Notion usage are configuration choices, not candidate facts. They must still be asked even when uploaded resumes appear to imply an answer.
+
 ## Recording answers
 
-Write configurable parameters to `easy-apply.yaml` and factual candidate information to `profile/profile.md`.
+Write configurable parameters, including the explicitly confirmed page target and Notion choice, to `easy-apply.yaml`. Write factual candidate information to `profile/profile.md`.
 
 Persistent preferences should be stored only when the user clearly asks for a general/default rule. One-off edits for one application must not silently become global preferences.

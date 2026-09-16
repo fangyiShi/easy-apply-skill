@@ -2,19 +2,9 @@
 % Base template: resume-dev.tex
 % Main changes: setup-approved fictional example baseline
 % Grounding notes: fictional example workspace only.
-\documentclass[10pt,a4paper]{article}
-\usepackage[margin=1.5cm]{geometry}
-\usepackage[T1]{fontenc}
-\usepackage{lmodern}
-\usepackage{enumitem}
-\usepackage{titlesec}
-\pagestyle{empty}
-\setlength{\parindent}{0pt}
-\setlist[itemize]{leftmargin=*,nosep}
-\titleformat{\section}{\bfseries\large}{}{0pt}{}
+\input{resume-layout.tex}
 \begin{document}
-{\LARGE\textbf{Jordan Example}}\\
-Example City \quad jordan@example.invalid
+\ResumeHeader{Jordan Example}{Example City \quad jordan@example.invalid}
 \section{PROFILE}
 Early-career software candidate with a computing degree and hands-on web application project experience.
 \section{SKILLS}

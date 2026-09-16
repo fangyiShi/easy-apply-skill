@@ -19,8 +19,8 @@ Before setup or ordinary module execution, verify only the capabilities required
 - PyYAML is importable before reading `easy-apply.yaml`.
 - `pypdf` or the documented PDF fallback is available before PDF inspection.
 - `pdflatex` is available before generating LaTeX PDFs.
-- Notion is connected and authorized before creating, querying, or updating Notion content.
-- The runtime can reach the Notion upload endpoint before material sync.
+- When `notion.enabled` is true, Notion is connected and authorized before creating, querying, or updating Notion content.
+- When `notion.enabled` is true, the runtime can reach the Notion upload endpoint before material sync.
 
 If a required capability is missing:
 
@@ -37,6 +37,7 @@ Primary workspace inputs:
 ```text
 easy-apply.yaml
 profile/profile.md
+profile/resume-layout.tex
 profile/resume-templates/
 sources/
 artefacts/
@@ -87,7 +88,7 @@ references/common/grounding.md
 references/notion/sync.md
 ```
 
-Then read only `profile/profile.md`, the selected role-family template, the current live JD/job record, and relevant config.
+Then read only `profile/profile.md`, `profile/resume-layout.tex`, the selected role-family template, the current live JD/job record, and relevant config.
 
 Use deterministic scripts for build/check/sync preparation where applicable.
 
@@ -114,13 +115,13 @@ references/notion/sync.md
 references/notion/schema.md
 ```
 
-Use the persisted `File Slug`, `scripts/find_materials.py`, the runtime Notion connector/API, and `scripts/upload_file.py`.
+Material sync requires `notion.enabled: true`. Use the persisted `File Slug`, `scripts/find_materials.py`, the runtime Notion connector/API, and `scripts/upload_file.py`.
 
 ## Global rules
 
-1. **Human control.** Never submit an application automatically. Job search may initialize a new Notion row as `Not Applied`; no module changes an existing application Status. The user owns later Status/Apply date decisions.
+1. **Human control.** Never submit an application automatically. When Notion is enabled, job search may initialize a new Notion row as `Not Applied`; no module changes an existing application Status. The user owns later Status/Apply date decisions.
 2. **Grounding.** Candidate factual claims must be supported by `profile/profile.md` or explicit current-session user information. A JD is not evidence about the candidate.
-3. **Local material truth.** Current local PDFs are the source of truth for Submitted Materials. Sync mirrors the complete local set.
+3. **Local material truth.** Current local PDFs are the source of truth for Submitted Materials. When Notion is enabled, sync mirrors the complete local set.
 4. **Stable identity.** Use JobRecord identity rules and persisted `file_slug`; do not rebuild filenames from edited Notion titles.
 5. **Preferences.** Persist a preference/template change only during setup or when the user explicitly asks for a general/default rule. One-off edits stay local to that application.
 6. **Minimal context.** Business modules do not read each other's rules. Do not load all references by default.
@@ -131,6 +132,7 @@ Use the persisted `File Slug`, `scripts/find_materials.py`, the runtime Notion c
 
 ```text
 scripts/seen_jobs.py
+scripts/archive_original_resume.py
 scripts/build_pdf.py
 scripts/check_resume.py
 scripts/check_letter.py

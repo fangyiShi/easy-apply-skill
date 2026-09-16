@@ -72,11 +72,13 @@ For every evaluated job:
 
 - update seen-job state through `scripts/seen_jobs.py`.
 
-For kept jobs only:
+For kept jobs only, when `notion.enabled` is true:
 
 - create the Notion record according to `references/notion/schema.md` if it does not already exist;
 - set initial Status to `Not Applied`;
 - never modify an existing application Status.
+
+When `notion.enabled` is false, do not call Notion. Keep local seen-job state and include kept jobs in the report, making clear that no remote tracker row was created.
 
 Job search does not generate application materials or submit applications.
 
