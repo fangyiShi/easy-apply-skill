@@ -1,0 +1,229 @@
+schema_version: 1
+
+# Regression cases distilled from the original Easy Apply search prompt.
+# These are behavioral examples for evaluating the AI screening layer.
+# They intentionally avoid one user's personal salary, experience, location,
+# technology, or role-family preferences.
+
+cases:
+  - id: eligibility_qualified_phrase_overrides_general_work_rights
+    category: eligibility
+    purpose: >
+      Ensure a permissive-looking phrase is not accepted before reading the
+      qualifier that narrows eligibility.
+    candidate_facts:
+      citizenship: not_confirmed
+      permanent_residency: false
+      work_rights: valid_temporary_work_rights
+    job_evidence: >
+      Applicants must have full working rights in Australia
+      (Australian citizens or Permanent Residents only).
+    expected:
+      decision: reject
+      reason_should_include:
+        - citizenship_or_permanent_residency_restriction
+      must_not_reason_as:
+        - general_work_rights_only
+
+  - id: eligibility_no_sponsorship_is_not_citizenship_requirement
+    category: eligibility
+    purpose: >
+      Distinguish sponsorship policy from citizenship or permanent-residency
+      requirements.
+    candidate_facts:
+      work_rights: confirmed_sufficient_for_role
+      sponsorship_needed: false
+    job_evidence: >
+      Applicants must have full working rights in Australia. Sponsorship is
+      not available for this position.
+    expected:
+      decision: keep_or_continue_screening
+      reason_should_include:
+        - no_sponsorship_available
+      must_not_reason_as:
+        - citizenship_required
+        - permanent_residency_required
+
+  - id: eligibility_clearance_wording_requires_full_interpretation
+    category: eligibility
+    purpose: >
+      Ensure security-clearance wording is evaluated against confirmed
+      candidate eligibility rather than guessed from keywords alone.
+    candidate_facts:
+      clearance_eligibility: unknown
+    job_evidence: >
+      The successful candidate must be eligible to obtain and maintain the
+      security clearance required for this role.
+    expected:
+      decision: needs_verification
+      reason_should_include:
+        - clearance_requirement
+        - candidate_eligibility_unresolved
+
+  - id: date_platform_filter_does_not_override_visible_date
+    category: date
+    purpose: >
+      Ensure a platform freshness filter is treated as a discovery aid rather
+      than proof that the listing is within the requested time range.
+    run_request:
+      posting_range: past_24_hours
+    platform_context:
+      filter_applied: past_24_hours
+    job_evidence: >
+      The visible job card says "2 days ago".
+    expected:
+      date_status: out_of_range
+      decision: reject
+
+  - id: date_ambiguous_relative_label_requires_verification
+    category: date
+    purpose: >
+      Preserve uncertainty when a relative posting label sits on the user's
+      requested boundary and no precise timestamp is available.
+    run_request:
+      posting_range: past_24_hours
+    job_evidence: >
+      The only visible posting-time evidence is "1d ago".
+    expected:
+      date_status: unknown
+      decision: needs_verification
+
+  - id: relevance_title_alone_is_not_enough
+    category: relevance
+    purpose: >
+      Ensure a technology-sounding title does not substitute for evidence of
+      responsibilities that match a configured target role family.
+    workspace:
+      target_role_family: technical_support
+    job:
+      title: Technical Support Specialist
+      responsibilities: >
+        Handle account enquiries, explain financial products, process customer
+        complaints, and meet sales and retention targets. No technical systems,
+        device support, software configuration, administration, or technical
+        troubleshooting responsibilities are described.
+    expected:
+      decision: reject
+      reason_should_include:
+        - responsibilities_outside_target_role
+      must_not_reason_as:
+        - title_match_is_sufficient
+
+  - id: relevance_unusual_title_with_matching_work_should_not_be_rejected_early
+    category: relevance
+    purpose: >
+      Ensure unconventional titles are evaluated by responsibilities and hard
+      skills rather than title vocabulary alone.
+    workspace:
+      target_role_family: application_support
+    job:
+      title: Operations Analyst
+      responsibilities: >
+        Reproduce user issues, inspect application logs, query SQL data,
+        validate REST API responses, document root causes, and escalate
+        software defects to engineering.
+    expected:
+      decision: keep_or_continue_screening
+      reason_should_include:
+        - responsibilities_match_target_role
+
+  - id: seniority_title_body_contradiction_is_preserved
+    category: seniority
+    purpose: >
+      Ensure conflicting seniority evidence is surfaced instead of silently
+      trusting either the title or the body.
+    workspace:
+      target_level: early_career
+    job:
+      title: Junior Developer
+      requirements: >
+        Minimum five years of professional development experience is required.
+    expected:
+      decision: keep_reject_or_needs_verification_based_on_user_policy
+      reason_should_include:
+        - title_requirement_contradiction
+      must_not:
+        - ignore_title
+        - ignore_experience_requirement
+
+  - id: application_aggregator_visible_but_authoritative_listing_closed
+    category: application_status
+    purpose: >
+      Ensure an active-looking aggregator page does not override the current
+      employer or ATS application status.
+    job_evidence:
+      aggregator: listing_page_visible
+      employer_ats: this_job_is_no_longer_available
+    expected:
+      application_status: closed
+      decision: reject
+
+  - id: application_generic_careers_redirect_is_not_active_job_path
+    category: application_status
+    purpose: >
+      Ensure a generic careers homepage is not treated as proof that a
+      specific advertised role remains open.
+    job_evidence:
+      listing_page: visible
+      apply_action: redirects_to_generic_careers_homepage
+      matching_specific_role_on_authoritative_site: not_found
+    expected:
+      application_status: closed_or_unknown
+      decision: reject_or_needs_verification
+      must_not:
+        - mark_active_without_role_specific_path
+
+  - id: cover_letter_optional_still_sets_boolean_true
+    category: cover_letter
+    purpose: >
+      Preserve the current Easy Apply boolean contract: any visible mention of
+      a cover letter, including optional, sets cover_letter to true.
+    job_evidence: >
+      You may optionally include a cover letter with your application.
+    expected:
+      cover_letter: true
+
+  - id: duplicate_same_job_across_sources
+    category: deduplication
+    purpose: >
+      Ensure cross-platform copies of the same normalized company, title and
+      location are treated as one job by default.
+    records:
+      - source: linkedin
+        company: Example Systems
+        title: Application Support Analyst
+        location: Example City
+      - source: jora
+        company: example systems
+        title: Application Support Analyst
+        location: example city
+    expected:
+      duplicate: true
+      basis: job_key
+
+  - id: browser_dynamic_list_requires_stable_identity
+    category: source_behavior
+    purpose: >
+      Protect the learned browser rule that a dynamic or virtualized result
+      list must be tracked with stable IDs rather than visual card position.
+    platform_behavior: >
+      Opening a result causes promoted cards to be inserted and the visible
+      order changes.
+    expected:
+      required_behavior:
+        - collect_stable_job_ids
+        - do_not_use_visual_ordinal_as_identity
+
+  - id: reposted_listing_keeps_repost_context
+    category: source_behavior
+    purpose: >
+      Ensure a reposted listing is not treated as an ordinary original post
+      without preserving the platform's repost signal.
+    job_evidence: >
+      LinkedIn displays "Reposted 3 hours ago".
+    expected:
+      preserve_context:
+        - reposted
+        - displayed_current_posting_time
+      must_not:
+        - discard_repost_signal

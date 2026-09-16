@@ -1,0 +1,30 @@
+schema_version: 1
+
+notion:
+  data_source_id: collection://EXAMPLE_REPLACE_ME
+
+search:
+  keywords:
+    - IT Support
+    - Junior Software Engineer
+  location: Example City
+  configured_sources:
+    linkedin:
+      location: Example Country
+
+role_families:
+  support: resume-support.tex
+  dev: resume-dev.tex
+
+eligibility:
+  work_rights: "Example only: user must replace with their explicitly confirmed work-rights facts."
+
+resume:
+  pages: 1
+  exclude: []
+  skill_aliases:
+    React:
+      - React.js
+
+writing:
+  preferences: []

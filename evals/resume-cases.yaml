@@ -1,0 +1,87 @@
+schema_version: 1
+purpose: >
+  Regression cases for AI resume-template selection and grounding. These are
+  fictional and candidate-agnostic; they test behavior rather than one user's
+  target roles or technologies.
+
+cases:
+  - id: choose_support_template_by_work_not_title
+    profile_evidence:
+      skills: [Windows, Microsoft 365, Active Directory, troubleshooting]
+      role_families:
+        support: resume-support.tex
+        dev: resume-dev.tex
+    job:
+      title: Technology Operations Associate
+      responsibilities:
+        - resolve end-user incidents
+        - manage accounts and access
+        - support laptops and collaboration tools
+    expected:
+      template: resume-support.tex
+      principles:
+        - choose_by_primary_responsibilities
+        - do_not_choose_by_title_alone
+
+  - id: unsupported_jd_tool_must_not_be_added
+    profile_evidence:
+      skills: [Python, SQL, Git]
+      facts:
+        - Built a Python data-processing course project.
+    job:
+      title: Junior Data Application Developer
+      requirements: [Python, SQL, Terraform]
+    expected:
+      allowed_emphasis: [Python, SQL]
+      forbidden_claims: [Terraform experience, Terraform skill]
+      principles:
+        - jd_is_not_candidate_evidence
+
+  - id: lab_must_not_become_production_experience
+    profile_evidence:
+      facts:
+        - Built an independent identity administration lab for learning.
+    job:
+      title: Systems Support Analyst
+      requirements:
+        - production identity administration experience preferred
+    expected:
+      allowed_claims:
+        - independent lab experience
+        - identity administration practice
+      forbidden_claims:
+        - production identity administration
+        - administered employer production systems
+      principles:
+        - preserve_environment_boundary
+
+  - id: metric_must_not_be_invented
+    profile_evidence:
+      facts:
+        - Helped troubleshoot user issues during a volunteer workshop.
+    job:
+      title: Technical Support Assistant
+      requirements:
+        - customer support
+        - troubleshooting
+    expected:
+      forbidden_claim_patterns:
+        - reduced incidents by 30 percent
+        - supported 100 users
+        - achieved 99 percent satisfaction
+      principles:
+        - no_unverified_metrics
+
+  - id: one_job_tailoring_must_not_mutate_template
+    profile_evidence:
+      role_families:
+        generalist: resume-generalist.tex
+    job:
+      title: Application Analyst
+      requirements: [REST APIs, SQL]
+    expected:
+      output: job_specific_copy
+      template_mutated: false
+      principles:
+        - targeted_edits
+        - template_is_baseline_not_output

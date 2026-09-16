@@ -1,0 +1,52 @@
+% Easy Apply cover-letter layout scaffold
+% This file defines presentation only. Letter content must be generated from
+% references/cover-letter/* and grounded in profile/profile.md.
+
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[margin=2.2cm]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage[hidelinks]{hyperref}
+\usepackage{parskip}
+
+\pagestyle{empty}
+\setlength{\parindent}{0pt}
+
+\begin{document}
+
+% Tailored for: <Company> — <Position>
+% file_slug: <persisted-file-slug>
+% Grounding: candidate claims must be supported by profile.md or explicit current-session facts.
+
+{\Large \textbf{<Candidate Name>}}\\
+<City, Country> \;|\; <Phone> \;|\; \href{mailto:<email>}{<email>}\\
+<Optional LinkedIn/GitHub>
+
+\vspace{1em}
+
+<DATE>
+
+\vspace{1em}
+
+<Hiring Manager / Hiring Team>\\
+<Company>\\
+<Optional company address>
+
+\vspace{1em}
+
+Dear <Hiring Manager / Hiring Team>,
+
+<Opening: identify the role and establish the strongest truthful reason for fit or interest.>
+
+<Body paragraph(s): connect verified experience, projects, skills, or domain context to the work described in the job. Do not restate the resume mechanically.>
+
+<Employer/role paragraph: explain why this role or employer is relevant using only verified company/job information and user-confirmed motivation.>
+
+<Closing: concise expression of interest and next-step availability.>
+
+Kind regards,\\
+<Preferred sign-off name>
+
+\end{document}

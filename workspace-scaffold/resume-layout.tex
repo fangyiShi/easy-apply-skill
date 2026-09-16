@@ -1,0 +1,64 @@
+% Easy Apply resume layout scaffold
+% This file provides only a minimal ATS-friendly LaTeX structure.
+% Setup may use it when the user does not already have a usable LaTeX resume.
+% User-confirmed resume templates belong in profile/resume-templates/.
+
+\documentclass[10pt,a4paper]{article}
+
+\usepackage[margin=1.5cm]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{enumitem}
+\usepackage[hidelinks]{hyperref}
+\usepackage{titlesec}
+\usepackage{parskip}
+
+\pagestyle{empty}
+\setlength{\parindent}{0pt}
+\setlist[itemize]{leftmargin=*, nosep}
+\titleformat{\section}{\bfseries\large}{}{0pt}{}[\vspace{-0.25em}\hrule]
+\titlespacing*{\section}{0pt}{0.8em}{0.45em}
+
+\begin{document}
+
+% Tailored for: <Company> — <Position>
+% Base template: <template filename>
+% Main changes: <short summary>
+% Grounding notes: all factual claims must be supported by profile.md.
+
+{\LARGE \textbf{<Candidate Name>}}\\
+<City, Country> \;|\; <Phone> \;|\; \href{mailto:<email>}{<email>} \;|\; <LinkedIn/GitHub if desired>
+
+\section{PROFILE}
+<Concise role-targeted profile based only on verified candidate facts.>
+
+\section{SKILLS}
+\textbf{<Category>:} <Skill>, <Skill>, <Skill>\\
+\textbf{<Category>:} <Skill>, <Skill>, <Skill>
+
+\section{WORK EXPERIENCE}
+
+\textbf{<Role>} \hfill <Dates>\\
+<Company>, <Location>
+\begin{itemize}
+  \item <Verified contribution or responsibility.>
+  \item <Verified contribution or responsibility.>
+  \item <Verified contribution or responsibility.>
+\end{itemize}
+
+\section{PROJECTS}
+
+\textbf{<Project Name>} \hfill <Dates or Year>
+\begin{itemize}
+  \item <Verified project work.>
+  \item <Verified project work.>
+  \item <Verified project work.>
+\end{itemize}
+
+\section{EDUCATION}
+
+\textbf{<Qualification>} \hfill <Dates>\\
+<Institution>, <Location>
+
+\end{document}

@@ -1,0 +1,53 @@
+# Easy Apply workspace configuration
+# This file is the single source of truth for user-configurable parameters.
+# Setup may populate or update values, but workflow rules belong in the Skill references, not here.
+
+schema_version: 1
+
+notion:
+  # Created or connected during setup.
+  data_source_id: null
+
+search:
+  # Core search terms used across enabled job sources.
+  keywords: []
+
+  # User's base location preference. Platform-specific location settings may override this.
+  location: null
+
+  # Sources are added when first configured. Do not pre-populate unused platforms.
+  configured_sources: {}
+
+  # No default freshness is stored here. If the user does not specify a time range for a search,
+  # the job-search workflow must ask before running.
+
+role_families:
+  # Map a logical target-role family to a confirmed resume template filename.
+  # Example:
+  # support: resume-support.tex
+  # appsupport: resume-appsupport.tex
+  # dev: resume-dev.tex
+
+eligibility:
+  # Record user-specific eligibility facts used by screening.
+  # Do not infer citizenship, visa status, sponsorship needs, or security-clearance eligibility.
+  work_rights: null
+
+resume:
+  # Preferred maximum resume length unless a role-specific template intentionally differs.
+  pages: 1
+
+  # Facts the user truly has but does not want included in generated application materials.
+  # This is not a blacklist of things the user has never done.
+  exclude: []
+
+  # Optional aliases used by deterministic skill/technology scans.
+  # Example:
+  # skill_aliases:
+  #   React: [React.js, ReactJS]
+  skill_aliases: {}
+
+writing:
+  # Optional global material-writing preferences explicitly confirmed by the user.
+  # Per-application edits must not be persisted here unless the user asks for a lasting rule.
+  preferences: []
